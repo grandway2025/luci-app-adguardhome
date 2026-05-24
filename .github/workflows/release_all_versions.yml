@@ -1,0 +1,233 @@
+name: Compile and Release All OpenWrt Versions
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "luci-app-adguardhome/**"
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: "Release Version (e.g., 1.8-13) - leave empty to auto-detect"
+        required: false
+        default: ""
+      release_title:
+        description: "Release Title"
+        required: false
+        default: ""
+      skip_release:
+        description: "Skip GitHub Release (compile only)"
+        type: boolean
+        required: false
+        default: false
+
+jobs:
+  Compile-All:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        version:
+          - name: "23.05.6"
+            short: "23"
+            gcc: "12.3.0"
+            ext: "tar.xz"
+            url: "https://downloads.openwrt.org/releases/23.05.6/targets/x86/64/openwrt-sdk-23.05.6-x86-64_gcc-12.3.0_musl.Linux-x86_64.tar.xz"
+          - name: "24.10.6"
+            short: "24"
+            gcc: "13.3.0"
+            ext: "tar.zst"
+            url: "https://downloads.openwrt.org/releases/24.10.6/targets/x86/64/openwrt-sdk-24.10.6-x86-64_gcc-13.3.0_musl.Linux-x86_64.tar.zst"
+          - name: "25.12.2"
+            short: "25"
+            gcc: "14.3.0"
+            ext: "tar.zst"
+            url: "https://downloads.openwrt.org/releases/25.12.2/targets/x86/64/openwrt-sdk-25.12.2-x86-64_gcc-14.3.0_musl.Linux-x86_64.tar.zst"
+    name: Compile OpenWrt ${{ matrix.version.short }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install build-essential curl git tar wget python3 rsync zstd
+
+      - name: Download OpenWrt ${{ matrix.version.short }} SDK
+        run: |
+          cd ..
+          mkdir -p openwrt-sdk
+          curl -fSLk --connect-timeout 30 --retry 2 \
+            "${{ matrix.version.url }}" \
+            -o "./openwrt-sdk/SDK.${{ matrix.version.ext }}"
+          cd openwrt-sdk
+          if [ "${{ matrix.version.ext }}" = "tar.zst" ]; then
+            tar --use-compress-program=zstd -xf SDK.${{ matrix.version.ext }} --strip-components=1
+          else
+            tar xf SDK.${{ matrix.version.ext }} --strip-components=1
+          fi
+          rm -f SDK.${{ matrix.version.ext }}
+          ls -la
+
+      - name: Prepare Package Source
+        run: |
+          cd ../openwrt-sdk
+          mkdir -p package/custom/luci-app-adguardhome
+          cp -rf ../luci-app-adguardhome/luci-app-adguardhome/. package/custom/luci-app-adguardhome/
+          ls -la package/custom/
+
+      - name: Update Feeds
+        run: |
+          cd ../openwrt-sdk
+          ./scripts/feeds update -a || true
+          ./scripts/feeds install -a || true
+
+      - name: Configure SDK
+        run: |
+          cd ../openwrt-sdk
+          make defconfig
+
+      - name: Compile Package
+        run: |
+          cd ../openwrt-sdk
+          make package/custom/luci-app-adguardhome/compile V=s 2>&1 | tail -100
+
+      - name: Collect Build Artifacts
+        run: |
+          SDK_VERSION="${{ matrix.version.name }}"
+          mkdir -p ipk_output
+
+          # Extract PKG_VERSION and PKG_RELEASE from Makefile
+          PKG_VER=$(grep '^PKG_VERSION:=' luci-app-adguardhome/Makefile | cut -d'=' -f2 | tr -d ' ')
+          PKG_REL=$(grep '^PKG_RELEASE:=' luci-app-adguardhome/Makefile | cut -d'=' -f2 | tr -d ' ')
+
+          # 1. Collect .ipk files (OpenWrt 23/24)
+          for f in ../openwrt-sdk/bin/packages/x86_64/base/luci-app-adguardhome_*.ipk; do
+            if [ -f "$f" ]; then
+              newname="luci-app-adguardhome_${PKG_VER}_${PKG_REL}_openwrt-${SDK_VERSION}_all.ipk"
+              cp "$f" "ipk_output/${newname}"
+              echo "Found: $newname"
+            fi
+          done
+
+          # 2. Collect .apk files (OpenWrt 25+)
+          for f in ../openwrt-sdk/bin/packages/x86_64/base/luci-app-adguardhome-*.apk; do
+            if [ -f "$f" ]; then
+              newname="luci-app-adguardhome_${PKG_VER}_${PKG_REL}_openwrt-${SDK_VERSION}_all.apk"
+              cp "$f" "ipk_output/${newname}"
+              echo "Found: $newname"
+            fi
+          done
+
+          echo "=== Output files ==="
+          ls -la ipk_output/
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: luci-app-adguardhome-openwrt${{ matrix.version.short }}
+          path: ipk_output/*.*
+          retention-days: 90
+
+  Release:
+    needs: Compile-All
+    if: ${{ !inputs.skip_release }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Determine Version
+        id: version
+        run: |
+          if [ -n "${{ inputs.release_version }}" ]; then
+            VERSION="${{ inputs.release_version }}"
+          else
+            VERSION=$(grep 'PKG_VERSION\|PKG_RELEASE' luci-app-adguardhome/Makefile | \
+              awk -F':=' '{gsub(/[ \t]+/,"",$2); print $2}' | tr '\n' '-' | sed 's/-$//')
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Release version: $VERSION"
+
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          pattern: luci-app-adguardhome-*
+          merge-multiple: true
+
+      - name: List Artifacts
+        run: |
+          echo "=== Downloaded packages ==="
+          ls -la artifacts/
+          echo ""
+          echo "=== File checksums ==="
+          sha256sum artifacts/*.* 2>/dev/null || true
+
+      - name: Generate Release Notes
+        run: |
+          COMMIT_MSG=$(git log -1 --pretty=format:"%s" HEAD)
+          COMMIT_SHA=$(git rev-parse --short HEAD)
+
+          # Build table from actual files
+          {
+            echo "| OpenWrt Version | Package |"
+            echo "|----------------|---------|"
+            for pkg in artifacts/*.*; do
+              [ -f "$pkg" ] || continue
+              filename=$(basename "$pkg")
+              # Extract version from: luci-app-adguardhome_1.8_13_openwrt-23.05.6_all.ipk
+              sdk=$(echo "$filename" | grep -oP 'openwrt-\K[0-9.]+')
+              [ -z "$sdk" ] && sdk="unknown"
+              echo "| $sdk | \`$filename\` |"
+            done
+          } > packages_table.md
+
+          cat > release_notes.md << NOTES
+          ## luci-app-adguardhome v${{ steps.version.outputs.version }}
+
+          ### 📦 Packages
+
+          $(cat packages_table.md)
+
+          ### 📝 Changes
+
+          - Commit: \`${COMMIT_SHA}\` - ${COMMIT_MSG}
+
+          ### 📋 Installation
+
+          \`\`\`bash
+          # For OpenWrt 23/24 (IPK format)
+          opkg install luci-app-adguardhome_*.ipk
+
+          # For OpenWrt 25+ (APK format)
+          apk add luci-app-adguardhome_*.apk
+          \`\`\`
+
+          ### ⚠️ Notes
+
+          - IPK for OpenWrt 23/25, APK for OpenWrt 25+
+          - Requires AdGuardHome core installed separately
+          NOTES
+
+          echo "Release notes:"
+          cat release_notes.md
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ inputs.release_title || format('luci-app-adguardhome v{0}', steps.version.outputs.version) }}
+          tag_name: v${{ steps.version.outputs.version }}
+          body_path: release_notes.md
+          files: artifacts/*.*
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

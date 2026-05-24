@@ -1,0 +1,276 @@
+#/cgi-bin/luci/admin/services/AdGuardHome
+msgid "Base Setting"
+msgstr "Base Setting"
+
+msgid "Log"
+msgstr "Log"
+
+msgid "Manual Config"
+msgstr "Manual Config"
+
+msgid "Free and open source, powerful network-wide ads & trackers blocking DNS server."
+msgstr "Free and open source, powerful network-wide ads & trackers blocking DNS server."
+
+msgid "RUNNING"
+msgstr "RUNNING"
+
+msgid "NOT RUNNING"
+msgstr "NOT RUNNING"
+
+msgid "Redirected"
+msgstr "Redirected"
+
+msgid "Not redirect"
+msgstr "Not redirect"
+
+msgid "Collecting data..."
+msgstr "Collecting data..."
+
+msgid "Enable"
+msgstr "Enable"
+
+msgid "Browser management port"
+msgstr "Browser management port"
+
+msgid "Update"
+msgstr "Update"
+
+msgid "Update core version"
+msgstr "Update core version"
+
+msgid "Check..."
+msgstr "Check..."
+
+msgid "Updated"
+msgstr "Updated"
+
+msgid "Force update"
+msgstr "Force update"
+
+msgid "Fast config"
+msgstr "Fast config"
+
+msgid "core version:"
+msgstr "core version:"
+
+msgid "no config"
+msgstr "no config"
+
+msgid "no core"
+msgstr "no core"
+
+msgid "Redirect"
+msgstr "Redirect"
+
+msgid "none"
+msgstr "none"
+
+msgid "Run as dnsmasq upstream server"
+msgstr "Run as dnsmasq upstream server"
+
+msgid "Redirect 53 port to AdGuardHome"
+msgstr "Redirect 53 port to AdGuardHome"
+
+msgid "Use port 53 replace dnsmasq"
+msgstr "Use port 53 replace dnsmasq"
+
+msgid "AdGuardHome redirect mode"
+msgstr "AdGuardHome redirect mode"
+
+msgid "Bin Path"
+msgstr "Bin Path"
+
+msgid "AdGuardHome Bin path if no bin will auto download"
+msgstr "AdGuardHome Bin path, if no bin will auto download"
+
+msgid "use upx to compress bin after download"
+msgstr "use upx to compress bin after download"
+
+msgid "compress faster"
+msgstr "compress faster"
+
+msgid "compress better"
+msgstr "compress better"
+
+msgid "compress best(can be slow for big files)"
+msgstr "compress best (can be slow for big files)"
+
+msgid "try all available compression methods & filters [slow]"
+msgstr "try all available compression methods & filters [slow]"
+
+msgid "try even more compression variants [very slow]"
+msgstr "try even more compression variants [very slow]"
+
+msgid "bin use less space,but may have compatibility issues"
+msgstr "bin use less space, but may have compatibility issues"
+
+msgid "Config Path"
+msgstr "Config Path"
+
+msgid "AdGuardHome config path"
+msgstr "AdGuardHome config path"
+
+msgid "Work dir"
+msgstr "Work dir"
+
+msgid "AdGuardHome work dir include rules,audit log and database"
+msgstr "AdGuardHome work dir include rules, audit log and database"
+
+msgid "Runtime log file"
+msgstr "Runtime log file"
+
+msgid "AdGuardHome runtime Log file if 'syslog': write to system log;if empty no log"
+msgstr "AdGuardHome runtime Log file, if 'syslog': write to system log; if empty no log"
+
+msgid "Verbose log"
+msgstr "Verbose log"
+
+msgid "Add gfwlist"
+msgstr "Add gfwlist"
+
+msgid "Add"
+msgstr "Add"
+
+msgid "Added"
+msgstr "Added"
+
+msgid "Not added"
+msgstr "Not added"
+
+msgid "Del gfwlist"
+msgstr "Del gfwlist"
+
+msgid "Del"
+msgstr "Del"
+
+msgid "Gfwlist upstream dns server"
+msgstr "Gfwlist upstream dns server"
+
+msgid "Gfwlist domain upstream dns service"
+msgstr "Gfwlist domain upstream dns service"
+
+msgid "Change browser management password"
+msgstr "Change browser management password"
+
+msgid "Culculate"
+msgstr "Calculate"
+
+msgid "Load culculate model"
+msgstr "Load calculate model"
+
+msgid "loading..."
+msgstr "loading..."
+
+msgid "Please save/apply"
+msgstr "Please save/apply"
+
+msgid "is empty"
+msgstr "is empty"
+
+msgid "Press load culculate model and culculate finally save/apply"
+msgstr "Press load calculate model and calculate then save/apply"
+
+msgid "Keep files when system upgrade"
+msgstr "Keep files when system upgrade"
+
+msgid "core bin"
+msgstr "core bin"
+
+msgid "config file"
+msgstr "config file"
+
+msgid "log file"
+msgstr "log file"
+
+msgid "querylog.json"
+msgstr "querylog.json"
+
+msgid "On boot when network ok restart"
+msgstr "On boot when network ok restart"
+
+msgid "Backup workdir files when shutdown"
+msgstr "Backup workdir files when shutdown"
+
+msgid "Will be restore when workdir/data is empty"
+msgstr "Will be restored when workdir/data is empty"
+
+msgid "Backup workdir path"
+msgstr "Backup workdir path"
+
+msgid "Crontab task"
+msgstr "Crontab task"
+
+msgid "Auto update core"
+msgstr "Auto update core"
+
+msgid "Auto tail querylog"
+msgstr "Auto tail querylog"
+
+msgid "Auto tail runtime log"
+msgstr "Auto tail runtime log"
+
+msgid "Auto update ipv6 hosts and restart adh"
+msgstr "Auto update ipv6 hosts and restart adh"
+
+msgid "Auto update gfwlist and restart adh"
+msgstr "Auto update gfwlist and restart adh"
+
+msgid "Please change time and args in crontab"
+msgstr "Please change time and args in crontab"
+
+msgid "Download links for update"
+msgstr "Download links for update"
+
+msgid "reverse"
+msgstr "reverse"
+
+msgid "localtime"
+msgstr "localtime"
+
+msgid "Please add log path in config to enable log"
+msgstr "Please add log path in config to enable log"
+
+msgid "dellog"
+msgstr "dellog"
+
+msgid "download log"
+msgstr "download log"
+
+msgid "Use template"
+msgstr "Use template"
+
+msgid "Reload Config"
+msgstr "Reload Config"
+
+msgid "WARNING!!! no bin found apply config will not be test"
+msgstr "WARNING!!! no bin found, apply config will not be tested"
+
+msgid "Change browser management username"
+msgstr "Change browser management username"
+
+msgid "Username"
+msgstr "Username"
+
+msgid "Check Config"
+msgstr "Check Config"
+
+msgid "unknown"
+msgstr "unknown"
+
+msgid "Keep database when system upgrade"
+msgstr "Keep database when system upgrade"
+
+msgid "Boot delay until network ok"
+msgstr "Boot delay until network ok"
+
+msgid "filters"
+msgstr "filters"
+
+msgid "stats.db"
+msgstr "stats.db"
+
+msgid "sessions.db"
+msgstr "sessions.db"
+
+msgid "sessions.db"
+msgstr "sessions.db"
